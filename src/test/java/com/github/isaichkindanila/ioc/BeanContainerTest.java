@@ -1,5 +1,6 @@
 package com.github.isaichkindanila.ioc;
 
+import com.github.isaichkindanila.ioc.beans.CompositeBean;
 import com.github.isaichkindanila.ioc.interfaces.ConflictingInterface;
 import com.github.isaichkindanila.ioc.interfaces.GreetingInterface;
 import org.junit.Assert;
@@ -29,6 +30,14 @@ public class BeanContainerTest {
     public void getSimpleBean() {
         var bean = container.getBean(GreetingInterface.class);
         Assert.assertEquals("hello", bean.getGreeting());
+    }
+
+    @Test
+    public void getCompositeBean() {
+        var bean = container.getBean(CompositeBean.class);
+        var greeting = bean.getPersonalizedGreeting("test");
+
+        Assert.assertEquals("hello, test", greeting);
     }
 
     @Test

@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("WeakerAccess")
 public class BeanContainer {
     private static final String CLASS_NOT_FOUND = "class %s not found";
     private static final String CONSTRUCTOR_NOT_FOUND = "constructor not found for %s";
