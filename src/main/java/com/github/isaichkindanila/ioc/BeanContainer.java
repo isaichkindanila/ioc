@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class BeanContainer {
@@ -90,11 +91,16 @@ public class BeanContainer {
         }
     }
 
+    public <T> List<T> getBeans(Class<? extends T> beanClass) {
+        return beans.stream()
+                .filter(beanClass::isInstance)
+                .map(beanClass::cast)
+                .collect(Collectors.toList());
+    }
+
     @SuppressWarnings("StringBufferReplaceableByString")
     public <T> T getBean(Class<? extends T> beanClass) {
-        var candidates = beans.stream()
-                .filter(beanClass::isInstance)
-                .collect(Collectors.toList());
+        var candidates = getBeans(beanClass);
 
         if (candidates.size() == 0) {
             throw new BeanException("no beans found for class " + beanClass.getName());

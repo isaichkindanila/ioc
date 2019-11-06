@@ -34,6 +34,12 @@ public class BeanContainerTest {
     }
 
     @Test
+    public void getMultipleBeans() {
+        var beans = container.getBeans(ConflictingInterface.class);
+        Assert.assertEquals(2, beans.size());
+    }
+
+    @Test
     public void addBean() {
         try {
             container.getBean(Throwable.class);
