@@ -1,7 +1,5 @@
-package com.github.isaichkindanila.ioc.tests;
+package com.github.isaichkindanila.ioc;
 
-import com.github.isaichkindanila.ioc.BeanContainer;
-import com.github.isaichkindanila.ioc.BeanException;
 import com.github.isaichkindanila.ioc.interfaces.ConflictingInterface;
 import com.github.isaichkindanila.ioc.interfaces.GreetingInterface;
 import org.junit.Assert;
