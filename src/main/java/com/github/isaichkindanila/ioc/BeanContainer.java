@@ -1,10 +1,8 @@
 package com.github.isaichkindanila.ioc;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,24 +39,22 @@ public class BeanContainer {
         }
     }
 
-    private Class[] getArgClasses(JSONArray args) {
-        return args.toList().stream()
-                .map(object -> (String) object)
+    private Class[] getArgClasses(String[] args) {
+        return Arrays.stream(args)
                 .map(this::getClass)
                 .toArray(Class[]::new);
     }
 
     private Object[] getParameters(Class[] classes) {
-        return new Object[0];
+        return Arrays.stream(classes)
+                .map(this::getBean)
+                .toArray(Object[]::new);
     }
 
     @SuppressWarnings("unchecked")
-    private void readBean(JSONObject beanInfo) {
-        var className = beanInfo.getString("class");
-        var argClassNames = beanInfo.getJSONArray("args");
-
-        var beanClass = getClass(beanInfo.getString("class"));
-        var argClasses = getArgClasses(argClassNames);
+    private void addBean(BeanInfo beanInfo) {
+        var beanClass = getClass(beanInfo.getClassName());
+        var argClasses = getArgClasses(beanInfo.getArgs());
 
         try {
             var constructor = beanClass.getDeclaredConstructor(argClasses);
@@ -67,11 +63,11 @@ public class BeanContainer {
 
             beans.add(bean);
         } catch (NoSuchMethodException e) {
-            throw fatal(CONSTRUCTOR_NOT_FOUND, className, e);
+            throw fatal(CONSTRUCTOR_NOT_FOUND, beanInfo.getClassName(), e);
         } catch (IllegalAccessException e) {
-            throw fatal(ILLEGAL_ACCESS, className, e);
+            throw fatal(ILLEGAL_ACCESS, beanInfo.getClassName(), e);
         } catch (InstantiationException | InvocationTargetException e) {
-            throw fatal(CREATION_FAILURE, className, e);
+            throw fatal(CREATION_FAILURE, beanInfo.getClassName(), e);
         }
     }
 
@@ -82,13 +78,10 @@ public class BeanContainer {
             throw new IllegalStateException("file 'beans.json' not found in classpath");
         }
 
-        var jsonString = IOUtils.readAll(input);
-        var beanArray = new JSONArray(jsonString);
+        var beanInfoList = BeanParser.parseBeans(input);
+        var sortedInfoList = TopologicalSort.sorted(beanInfoList);
 
-        for (int i = 0; i < beanArray.length(); i++) {
-            var beanInfo = beanArray.getJSONObject(i);
-            readBean(beanInfo);
-        }
+        sortedInfoList.forEach(this::addBean);
     }
 
     public <T> List<T> getBeans(Class<? extends T> beanClass) {
