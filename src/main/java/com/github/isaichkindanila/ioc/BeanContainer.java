@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 public class BeanContainer {
     private static final String CLASS_NOT_FOUND = "class %s not found";
@@ -20,8 +21,9 @@ public class BeanContainer {
         return new BeanContainer();
     }
 
+
     private static RuntimeException fatal(String template, String parameter, Throwable cause) {
-        return new IllegalStateException(String.format(template, parameter), cause);
+        return new BeanException(String.format(template, parameter), cause);
     }
 
     private BeanContainer() {
@@ -74,6 +76,7 @@ public class BeanContainer {
         }
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void readBeansFrom(InputStream input) {
         var jsonString = IOUtils.readAll(input);
         var beanArray = new JSONArray(jsonString);
@@ -94,7 +97,31 @@ public class BeanContainer {
         readBeansFrom(input);
     }
 
+    @SuppressWarnings("StringBufferReplaceableByString")
     public <T> T getBean(Class<? extends T> beanClass) {
-        return null;
+        var candidates = beans.stream()
+                .filter(beanClass::isInstance)
+                .collect(Collectors.toList());
+
+        if (candidates.size() == 0) {
+            throw new BeanException("no beans found for class " + beanClass.getName());
+        }
+
+        if (candidates.size() > 1) {
+            var arrayString = candidates.stream()
+                    .map(bean -> bean.getClass().getName())
+                    .collect(Collectors.joining(", "));
+
+            var builder = new StringBuilder()
+                    .append("multiple beans found for class ")
+                    .append(beanClass)
+                    .append(": [")
+                    .append(arrayString)
+                    .append(']');
+
+            throw new BeanException(builder.toString());
+        }
+
+        return beanClass.cast(candidates.get(0));
     }
 }
