@@ -14,7 +14,7 @@ public class BeanContainerTest {
     @Before
     public void init() {
         container = BeanContainer.newInstance();
-        container.readBeansFromClasspath();
+        container.init();
     }
 
     @Test(expected = BeanException.class)
@@ -31,5 +31,18 @@ public class BeanContainerTest {
     public void getSimpleBean() {
         var bean = container.getBean(GreetingInterface.class);
         Assert.assertEquals("hello", bean.getGreeting());
+    }
+
+    @Test
+    public void addBean() {
+        try {
+            container.getBean(Throwable.class);
+            Assert.fail("BeanException expected");
+        } catch (BeanException ignore) {}
+
+        var bean = new RuntimeException();
+        container.addBean(bean);
+
+        Assert.assertSame(bean, container.getBean(Throwable.class));
     }
 }

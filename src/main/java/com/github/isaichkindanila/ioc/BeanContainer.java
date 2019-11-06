@@ -3,7 +3,6 @@ package com.github.isaichkindanila.ioc;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,7 +19,6 @@ public class BeanContainer {
     public static BeanContainer newInstance() {
         return new BeanContainer();
     }
-
 
     private static RuntimeException fatal(String template, String parameter, Throwable cause) {
         return new BeanException(String.format(template, parameter), cause);
@@ -76,8 +74,13 @@ public class BeanContainer {
         }
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public void readBeansFrom(InputStream input) {
+    public void init() {
+        var input = getClass().getResourceAsStream("/beans.json");
+
+        if (input == null) {
+            throw new IllegalStateException("file 'beans.json' not found in classpath");
+        }
+
         var jsonString = IOUtils.readAll(input);
         var beanArray = new JSONArray(jsonString);
 
@@ -85,16 +88,6 @@ public class BeanContainer {
             var beanInfo = beanArray.getJSONObject(i);
             readBean(beanInfo);
         }
-    }
-
-    public void readBeansFromClasspath() {
-        var input = getClass().getResourceAsStream("/beans.json");
-
-        if (input == null) {
-            throw new IllegalStateException("file 'beans.json' not found in classpath");
-        }
-
-        readBeansFrom(input);
     }
 
     @SuppressWarnings("StringBufferReplaceableByString")
