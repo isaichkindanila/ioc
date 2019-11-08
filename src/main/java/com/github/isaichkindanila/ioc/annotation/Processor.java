@@ -6,8 +6,6 @@ import org.json.JSONObject;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -21,7 +19,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @SupportedAnnotationTypes("com.github.isaichkindanila.ioc.annotation.Bean")
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class Processor extends AbstractProcessor {
 
     private final JSONArray beans = new JSONArray();
