@@ -1,5 +1,6 @@
 package com.github.isaichkindanila.ioc;
 
+@SuppressWarnings("WeakerAccess")
 public class BeanException extends RuntimeException {
 
     BeanException(String message) {

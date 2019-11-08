@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class TopologicalSortTest {
     private List<BeanInfo> beanInfoList;
@@ -13,19 +12,21 @@ public class TopologicalSortTest {
     @Before
     public void init() {
         beanInfoList = List.of(
-                new BeanInfo("3", new String[]{"1", "2"}),
-                new BeanInfo("1", new String[]{}),
-                new BeanInfo("2", new String[]{"1"})
+                new BeanInfo(String.class, new Class[]{Double.class, Thread.class}),
+                new BeanInfo(Thread.class, new Class[]{}),
+                new BeanInfo(Double.class, new Class[]{Thread.class})
         );
     }
 
     @Test
     public void testTopologicalSort() {
-        var sorted = TopologicalSort.sorted(beanInfoList);
-        var str = sorted.stream()
-                .map(BeanInfo::getClassName)
-                .collect(Collectors.joining());
+        var sorted = TopologicalSort.sorted(beanInfoList)
+                .stream()
+                .map(BeanInfo::getBeanClass)
+                .toArray(Class[]::new);
 
-        Assert.assertEquals("123", str);
+        var expected = new Class[]{Thread.class, Double.class, String.class};
+
+        Assert.assertArrayEquals(expected, sorted);
     }
 }

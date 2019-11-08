@@ -1,7 +1,6 @@
 package com.github.isaichkindanila.ioc;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class TopologicalSort {
@@ -9,12 +8,13 @@ class TopologicalSort {
     private final List<BeanInfo> sorted;
 
     static List<BeanInfo> sorted(List<BeanInfo> beanInfoList) {
-        // TODO: do topological sorting
         return new TopologicalSort(beanInfoList).sorted;
     }
 
     private TopologicalSort(List<BeanInfo> infoList) {
-        sorted = new ArrayList<>();
+        // elements are only added to the beginning
+        sorted = new LinkedList<>();
+
         nodes = infoList.stream()
                 .map(Node::new)
                 .collect(Collectors.toList());
@@ -23,33 +23,45 @@ class TopologicalSort {
     }
 
     private void sort() {
+        nodes.forEach(this::findParents);
         nodes.forEach(this::visit);
     }
 
-    private void visitChildrenOf(Node parent) {
-        for (var child : parent.getBeanInfo().getArgs()) {
+    @SuppressWarnings("unchecked")
+    private void findParents(Node child) {
+        for (var argClass : child.beanInfo.getArgClasses()) {
             for (var node : nodes) {
-                if (node.getBeanInfo().getClassName().equals(child)) {
-                    visit(node);
+                // if node's beanClass is subclass of argClass
+                // then node is required to instantiate child
+                // which means node is a 'parent'
+                if (argClass.isAssignableFrom(node.beanInfo.getBeanClass())) {
+                    node.children.add(child);
                 }
             }
         }
     }
 
     private void visit(Node node) {
-        if (node.getMark() == Mark.PERMANENT) {
+        if (node.mark == Mark.PERMANENT) {
+            // already visited
             return;
         }
 
-        if (node.getMark() == Mark.TEMPORARY) {
-            throw new BeanException("cyclical dependency");
+        if (node.mark == Mark.TEMPORARY) {
+            // cycle found
+            throw new BeanException("cyclical dependency found");
         }
 
-        node.setMark(Mark.TEMPORARY);
-        visitChildrenOf(node);
-        node.setMark(Mark.PERMANENT);
+        // set temporary mark to find cycles
+        node.mark = Mark.TEMPORARY;
 
-        sorted.add(node.getBeanInfo());
+        // visit each child
+        node.children.forEach(this::visit);
+
+        // set permanent mark to avoid visiting this node in the future
+        node.mark = Mark.PERMANENT;
+
+        sorted.add(0, node.beanInfo);
     }
 
     private enum Mark {
@@ -58,23 +70,13 @@ class TopologicalSort {
 
     private static class Node {
         private final BeanInfo beanInfo;
+        private final Set<Node> children;
         private Mark mark;
 
         Node(BeanInfo beanInfo) {
             this.beanInfo = beanInfo;
+            this.children = new HashSet<>();
             this.mark = Mark.NONE;
-        }
-
-        BeanInfo getBeanInfo() {
-            return beanInfo;
-        }
-
-        Mark getMark() {
-            return mark;
-        }
-
-        void setMark(Mark mark) {
-            this.mark = mark;
         }
     }
 }

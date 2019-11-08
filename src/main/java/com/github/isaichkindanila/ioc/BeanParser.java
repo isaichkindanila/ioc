@@ -24,13 +24,13 @@ class BeanParser {
     }
 
     private static BeanInfo jsonToBeanInfo(JSONObject json) {
-        var className = json.getString("class");
-        var args = json.getJSONArray("args").toList()
-                .stream()
-                .map(object -> (String) object)
-                .toArray(String[]::new);
+        var beanClass = ClassUtils.getClass(json.getString("class"));
+        var argClasses = json.getJSONArray("args").toList().stream()
+                .map(String.class::cast)
+                .map(ClassUtils::getClass)
+                .toArray(Class[]::new);
 
-        return new BeanInfo(className, args);
+        return new BeanInfo(beanClass, argClasses);
     }
 
     static List<BeanInfo> parseBeans(InputStream in) {

@@ -1,6 +1,5 @@
 package com.github.isaichkindanila.ioc;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,19 +8,10 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("WeakerAccess")
 public class BeanContainer {
-    private static final String CLASS_NOT_FOUND = "class %s not found";
-    private static final String CONSTRUCTOR_NOT_FOUND = "constructor not found for %s";
-    private static final String ILLEGAL_ACCESS = "cannot access constructor of %s";
-    private static final String CREATION_FAILURE = "failed to create bean %s";
-
     private final Collection<Object> beans;
 
     public static BeanContainer newInstance() {
         return new BeanContainer();
-    }
-
-    private static RuntimeException fatal(String template, String parameter, Throwable cause) {
-        return new BeanException(String.format(template, parameter), cause);
     }
 
     private BeanContainer() {
@@ -32,44 +22,14 @@ public class BeanContainer {
         beans.add(bean);
     }
 
-    private Class getClass(String className) {
-        try {
-            return Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            throw fatal(CLASS_NOT_FOUND, className, e);
-        }
-    }
-
-    private Class[] getArgClasses(String[] args) {
-        return Arrays.stream(args)
-                .map(this::getClass)
-                .toArray(Class[]::new);
-    }
-
-    private Object[] getParameters(Class[] classes) {
+    Object[] getParameters(Class[] classes) {
         return Arrays.stream(classes)
                 .map(this::getBean)
                 .toArray(Object[]::new);
     }
 
-    @SuppressWarnings("unchecked")
     private void addBean(BeanInfo beanInfo) {
-        var beanClass = getClass(beanInfo.getClassName());
-        var argClasses = getArgClasses(beanInfo.getArgs());
-
-        try {
-            var constructor = beanClass.getDeclaredConstructor(argClasses);
-            var parameters = getParameters(argClasses);
-            var bean = constructor.newInstance(parameters);
-
-            beans.add(bean);
-        } catch (NoSuchMethodException e) {
-            throw fatal(CONSTRUCTOR_NOT_FOUND, beanInfo.getClassName(), e);
-        } catch (IllegalAccessException e) {
-            throw fatal(ILLEGAL_ACCESS, beanInfo.getClassName(), e);
-        } catch (InstantiationException | InvocationTargetException e) {
-            throw fatal(CREATION_FAILURE, beanInfo.getClassName(), e);
-        }
+        beans.add(ClassUtils.createBean(this, beanInfo));
     }
 
     public void init() {
@@ -96,25 +56,29 @@ public class BeanContainer {
     public <T> T getBean(Class<? extends T> beanClass) {
         var candidates = getBeans(beanClass);
 
+        if (candidates.size() == 1) {
+            // exactly 1 bean found - everything is OK
+            return candidates.get(0);
+        }
+
         if (candidates.size() == 0) {
+            // no beans found - throw exception
             throw new BeanException("no beans found for class " + beanClass.getName());
         }
 
-        if (candidates.size() > 1) {
-            var arrayString = candidates.stream()
-                    .map(bean -> bean.getClass().getName())
-                    .collect(Collectors.joining(", "));
+        // several beans found - throw exception
+        var arrayString = candidates.stream()
+                .map(bean -> bean.getClass().getName())
+                .collect(Collectors.joining(", "));
 
-            var builder = new StringBuilder()
-                    .append("multiple beans found for class ")
-                    .append(beanClass)
-                    .append(": [")
-                    .append(arrayString)
-                    .append(']');
+        var builder = new StringBuilder()
+                .append("multiple beans found for class ")
+                .append(beanClass)
+                .append(": [")
+                .append(arrayString)
+                .append(']');
 
-            throw new BeanException(builder.toString());
-        }
+        throw new BeanException(builder.toString());
 
-        return beanClass.cast(candidates.get(0));
     }
 }

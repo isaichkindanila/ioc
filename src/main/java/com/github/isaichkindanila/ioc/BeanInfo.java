@@ -1,19 +1,19 @@
 package com.github.isaichkindanila.ioc;
 
 class BeanInfo {
-    private final String className;
-    private final String[] args;
+    private final Class beanClass;
+    private final Class[] argClasses;
 
-    BeanInfo(String className, String[] args) {
-        this.className = className;
-        this.args = args;
+    BeanInfo(Class beanClass, Class[] argClasses) {
+        this.beanClass = beanClass;
+        this.argClasses = argClasses;
     }
 
-    String getClassName() {
-        return className;
+    Class getBeanClass() {
+        return beanClass;
     }
 
-    String[] getArgs() {
-        return args;
+    Class[] getArgClasses() {
+        return argClasses;
     }
 }
