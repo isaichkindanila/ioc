@@ -1,6 +1,9 @@
 package com.github.isaichkindanila.ioc;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 class TopologicalSort {
@@ -23,19 +26,19 @@ class TopologicalSort {
     }
 
     private void sort() {
-        nodes.forEach(this::findParents);
+        nodes.forEach(this::findDependencies);
         nodes.forEach(this::visit);
     }
 
     @SuppressWarnings("unchecked")
-    private void findParents(Node child) {
-        for (var argClass : child.beanInfo.getArgClasses()) {
-            for (var node : nodes) {
-                // if node's beanClass is subclass of argClass
-                // then node is required to instantiate child
-                // which means node is a 'parent'
-                if (argClass.isAssignableFrom(node.beanInfo.getBeanClass())) {
-                    node.children.add(child);
+    private void findDependencies(Node node) {
+        for (var argClass : node.beanInfo.getArgClasses()) {
+            for (var n : nodes) {
+                // if n's beanClass is subclass of argClass
+                // then node is required to instantiate n
+                // which means n depends on node
+                if (argClass.isAssignableFrom(n.beanInfo.getBeanClass())) {
+                    n.dependants.add(node);
                 }
             }
         }
@@ -55,12 +58,13 @@ class TopologicalSort {
         // set temporary mark to find cycles
         node.mark = Mark.TEMPORARY;
 
-        // visit each child
-        node.children.forEach(this::visit);
+        // visit each dependant
+        node.dependants.forEach(this::visit);
 
         // set permanent mark to avoid visiting this node in the future
         node.mark = Mark.PERMANENT;
 
+        // add node;s BeanInfo to the beginning of the sorted list
         sorted.add(0, node.beanInfo);
     }
 
@@ -70,12 +74,12 @@ class TopologicalSort {
 
     private static class Node {
         private final BeanInfo beanInfo;
-        private final Set<Node> children;
+        private final Set<Node> dependants;
         private Mark mark;
 
         Node(BeanInfo beanInfo) {
             this.beanInfo = beanInfo;
-            this.children = new HashSet<>();
+            this.dependants = new HashSet<>();
             this.mark = Mark.NONE;
         }
     }
