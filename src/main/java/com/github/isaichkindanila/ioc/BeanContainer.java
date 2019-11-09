@@ -10,29 +10,24 @@ import java.util.stream.Collectors;
 public class BeanContainer {
     private final Collection<Object> beans;
 
-    public static BeanContainer newInstance() {
-        return new BeanContainer();
+    public static BeanContainer newInstance(Object... beans) {
+        var instance = new BeanContainer();
+
+        instance.beans.addAll(Arrays.asList(beans));
+        instance.init();
+
+        return instance;
     }
 
     private BeanContainer() {
         beans = new ArrayList<>();
     }
 
-    public void addBean(Object bean) {
-        beans.add(bean);
-    }
-
-    Object[] getParameters(Class[] classes) {
-        return Arrays.stream(classes)
-                .map(this::getBean)
-                .toArray(Object[]::new);
-    }
-
     private void addBean(BeanInfo beanInfo) {
         beans.add(ClassUtils.createBean(this, beanInfo));
     }
 
-    public void init() {
+    private void init() {
         var input = getClass().getResourceAsStream("/beans.json");
 
         if (input == null) {
@@ -64,21 +59,20 @@ public class BeanContainer {
         if (candidates.size() == 0) {
             // no beans found - throw exception
             throw new BeanException("no beans found for class " + beanClass.getName());
+        } else {
+            // several beans found - throw exception
+            var arrayString = candidates.stream()
+                    .map(bean -> bean.getClass().getName())
+                    .collect(Collectors.joining(", "));
+
+            var builder = new StringBuilder()
+                    .append("multiple beans found for class ")
+                    .append(beanClass)
+                    .append(": [")
+                    .append(arrayString)
+                    .append(']');
+
+            throw new BeanException(builder.toString());
         }
-
-        // several beans found - throw exception
-        var arrayString = candidates.stream()
-                .map(bean -> bean.getClass().getName())
-                .collect(Collectors.joining(", "));
-
-        var builder = new StringBuilder()
-                .append("multiple beans found for class ")
-                .append(beanClass)
-                .append(": [")
-                .append(arrayString)
-                .append(']');
-
-        throw new BeanException(builder.toString());
-
     }
 }

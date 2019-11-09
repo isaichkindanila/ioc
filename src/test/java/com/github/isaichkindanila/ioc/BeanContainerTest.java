@@ -13,7 +13,6 @@ public class BeanContainerTest {
     @Before
     public void init() {
         container = BeanContainer.newInstance();
-        container.init();
     }
 
     @Test(expected = BeanException.class)
@@ -54,7 +53,7 @@ public class BeanContainerTest {
         } catch (BeanException ignore) {}
 
         var bean = new RuntimeException();
-        container.addBean(bean);
+        container = BeanContainer.newInstance(bean);
 
         Assert.assertSame(bean, container.getBean(Throwable.class));
     }
