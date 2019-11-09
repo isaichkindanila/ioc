@@ -6,10 +6,24 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Class responsible for finding and creating beans.
+ */
 @SuppressWarnings("WeakerAccess")
 public class BeanContainer {
     private final Collection<Object> beans;
 
+    /**
+     * Creates new instance of BeanContainer.
+     * <p>
+     * The instance would contain beans specified in {@code "beans.json"} file
+     * (which is automatically created by annotation processor during compilation),
+     * as well as beans passed as parameters to this method.
+     *
+     * @param beans base beans necessary to create annotated beans
+     * @return new instance of BeanContainer
+     * @throws BeanException if beans cannot be created for some reason
+     */
     public static BeanContainer newInstance(Object... beans) {
         var instance = new BeanContainer();
 
@@ -40,6 +54,12 @@ public class BeanContainer {
         sortedInfoList.forEach(this::addBean);
     }
 
+    /**
+     * Finds all beans which can be casted to specified class.
+     *
+     * @param beanClass beans' superclass
+     * @return list of beans casted to specified class
+     */
     public <T> List<T> getBeans(Class<? extends T> beanClass) {
         return beans.stream()
                 .filter(beanClass::isInstance)
@@ -47,6 +67,15 @@ public class BeanContainer {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Finds one bean which can be casted to specified class.
+     * <p>
+     * If zero or more than one bean is found, then {@code BeanException} is thrown.
+     *
+     * @param beanClass bean's superclass
+     * @return bean casted to specified class
+     * @throws BeanException if zero or more than one bean is found
+     */
     @SuppressWarnings("StringBufferReplaceableByString")
     public <T> T getBean(Class<? extends T> beanClass) {
         var candidates = getBeans(beanClass);
