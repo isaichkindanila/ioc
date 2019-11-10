@@ -35,8 +35,8 @@ class TopologicalSort {
         for (var argClass : node.beanInfo.getArgClasses()) {
             for (var n : nodes) {
                 // if n's beanClass is subclass of argClass
-                // then node is required to instantiate n
-                // which means n depends on node
+                // then n is required to instantiate node
+                // which means node depends on n
                 if (argClass.isAssignableFrom(n.beanInfo.getBeanClass())) {
                     n.dependants.add(node);
                 }
