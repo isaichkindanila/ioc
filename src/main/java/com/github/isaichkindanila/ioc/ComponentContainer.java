@@ -7,89 +7,52 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Class responsible for finding and creating beans.
+ * Class responsible for finding and creating components.
  */
 @SuppressWarnings("WeakerAccess")
 public class ComponentContainer {
-    private final Collection<Object> beans;
+    private final Collection<Object> container;
 
-    /**
-     * Creates new instance of BeanContainer.
-     * <p>
-     * The instance would contain beans specified in {@code "beans.json"} file
-     * (which is automatically created by annotation processor during compilation),
-     * as well as beans passed as parameters to this method.
-     *
-     * @param components base beans necessary to create annotated beans
-     * @return new instance of BeanContainer
-     * @throws ComponentException if beans cannot be created for some reason
-     */
-    public static ComponentContainer newInstance(Object... components) {
-        var instance = new ComponentContainer();
+    public static ComponentContainer newInstance(String basePackage, Object... baseComponents) {
+        var instance = new ComponentContainer(baseComponents);
 
-        instance.beans.addAll(Arrays.asList(components));
-        instance.init();
+        var componentsInfoList = ComponentParser.parseFrom(basePackage);
+        var sortedInfoList = TopologicalSort.sorted(componentsInfoList);
+
+        sortedInfoList.forEach(instance::addComponent);
 
         return instance;
     }
 
-    private ComponentContainer() {
-        beans = new ArrayList<>();
+    private ComponentContainer(Object... components) {
+        container = new ArrayList<>(Arrays.asList(components));
     }
 
-    private void addComponent(ComponentInfo componentInfo) {
-        beans.add(ClassUtils.createBean(this, componentInfo));
+    private void addComponent(ComponentInfo info) {
+        container.add(ComponentFactory.createComponent(this, info));
     }
 
-    private void init() {
-        var input = getClass().getResourceAsStream("/beans.json");
-
-        if (input == null) {
-            throw new IllegalStateException("file 'beans.json' not found in classpath");
-        }
-
-        var beanInfoList = BeanParser.parseBeans(input);
-        var sortedInfoList = TopologicalSort.sorted(beanInfoList);
-
-        sortedInfoList.forEach(this::addComponent);
-    }
-
-    /**
-     * Finds all beans which can be casted to specified class.
-     *
-     * @param clazz beans' superclass
-     * @return list of beans casted to specified class
-     */
     public <T> List<T> getComponents(Class<? extends T> clazz) {
-        return beans.stream()
+        return container.stream()
                 .filter(clazz::isInstance)
                 .map(clazz::cast)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Finds one bean which can be casted to specified class.
-     * <p>
-     * If zero or more than one bean is found, then {@code BeanException} is thrown.
-     *
-     * @param clazz bean's superclass
-     * @return bean casted to specified class
-     * @throws ComponentException if zero or more than one bean is found
-     */
     @SuppressWarnings("StringBufferReplaceableByString")
     public <T> T getComponent(Class<? extends T> clazz) {
         var candidates = getComponents(clazz);
 
         if (candidates.size() == 1) {
-            // exactly 1 bean found - everything is OK
+            // exactly 1 component found - everything is OK
             return candidates.get(0);
         }
 
         if (candidates.size() == 0) {
-            // no beans found - throw exception
+            // no components found - throw exception
             throw new ComponentException("no beans found for class " + clazz.getName());
         } else {
-            // several beans found - throw exception
+            // several components found - throw exception
             var arrayString = candidates.stream()
                     .map(bean -> bean.getClass().getName())
                     .collect(Collectors.joining(", "));

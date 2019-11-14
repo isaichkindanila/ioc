@@ -16,9 +16,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20190722</version>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+            <version>4.8.47</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

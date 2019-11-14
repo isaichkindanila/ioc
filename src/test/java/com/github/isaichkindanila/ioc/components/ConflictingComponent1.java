@@ -1,6 +1,6 @@
 package com.github.isaichkindanila.ioc.components;
 
-import com.github.isaichkindanila.ioc.annotation.Component;
+import com.github.isaichkindanila.ioc.Component;
 import com.github.isaichkindanila.ioc.interfaces.ConflictingInterface;
 
 @Component

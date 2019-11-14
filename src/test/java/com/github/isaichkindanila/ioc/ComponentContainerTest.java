@@ -8,11 +8,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ComponentContainerTest {
+    private static final String PACKAGE = "com.github.isaichkindanila.ioc.components";
     private ComponentContainer container;
 
     @Before
     public void init() {
-        container = ComponentContainer.newInstance();
+        container = ComponentContainer.newInstance(PACKAGE, "hello");
     }
 
     @Test(expected = ComponentException.class)
@@ -52,9 +53,9 @@ public class ComponentContainerTest {
             Assert.fail("BeanException expected");
         } catch (ComponentException ignore) {}
 
-        var bean = new RuntimeException();
-        container = ComponentContainer.newInstance(bean);
+        var component = new RuntimeException();
+        container = ComponentContainer.newInstance(PACKAGE, "", component);
 
-        Assert.assertSame(bean, container.getComponent(Throwable.class));
+        Assert.assertSame(component, container.getComponent(Throwable.class));
     }
 }
