@@ -13,6 +13,16 @@ import java.util.stream.Collectors;
 public class ComponentContainer {
     private final Collection<Object> container;
 
+    /**
+     * Creates new instance of {@code ComponentContainer}.
+     *
+     * @param basePackage top-level common package of all components
+     * @param baseComponents base components required to create other components
+     * @return new instance of {@code ComponentContainer}
+     * @throws ComponentException if component creation is impossible,
+     *                            e.g. circular dependencies found
+     *                            or some component does not have a public constructor
+     */
     public static ComponentContainer newInstance(String basePackage, Object... baseComponents) {
         var instance = new ComponentContainer(baseComponents);
 
@@ -32,6 +42,12 @@ public class ComponentContainer {
         container.add(ComponentFactory.createComponent(this, info));
     }
 
+    /**
+     * Finds all components which can be casted to specified class.
+     *
+     * @param clazz components' superclass
+     * @return {@code List} of components casted to specified class
+     */
     public <T> List<T> getComponents(Class<? extends T> clazz) {
         return container.stream()
                 .filter(clazz::isInstance)
@@ -39,6 +55,13 @@ public class ComponentContainer {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Finds one component which can be casted to specified class.
+     *
+     * @param clazz component's superclass
+     * @return component casted to specified class
+     * @throws ComponentException if zero or several components can be casted to specified class
+     */
     @SuppressWarnings("StringBufferReplaceableByString")
     public <T> T getComponent(Class<? extends T> clazz) {
         var candidates = getComponents(clazz);

@@ -8,8 +8,7 @@ import java.lang.annotation.Target;
 /**
  * Marks classes that should be instantiated as components.
  * <p>
- * Components must be <i>top-level</i>, <i>not abstract</i>
- * classes with <i>exactly one</i> public constructor.
+ * Components must be <i>not abstract</i> classes with <i>exactly one</i> public constructor.
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

@@ -64,7 +64,7 @@ class TopologicalSort {
         // set permanent mark to avoid visiting this node in the future
         node.mark = Mark.PERMANENT;
 
-        // add node;s BeanInfo to the beginning of the sorted list
+        // add node's ComponentInfo to the beginning of the sorted list
         sorted.add(0, node.componentInfo);
     }
 
