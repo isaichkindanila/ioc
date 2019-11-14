@@ -2,23 +2,19 @@ package com.github.isaichkindanila.ioc;
 
 import com.github.isaichkindanila.ioc.annotation.Component;
 
-import java.util.Arrays;
-
 class ComponentFactory {
 
-    private static Object[] getParameters(ComponentContainer container, Class[] argClasses) {
-        return Arrays.stream(argClasses)
-                .map(container::getComponent)
-                .toArray();
+    private ComponentFactory() {
     }
 
     @SuppressWarnings("unchecked")
     private static Wrapper createComponent0(ComponentContainer container, ComponentInfo info) throws Exception {
         var componentClass = info.getComponentClass();
-        var argClasses = info.getArgClasses();
 
-        var constructor = componentClass.getConstructor(argClasses);
-        var parameters = getParameters(container, argClasses);
+        var constructor = componentClass.getConstructor(info.getArgClasses());
+        var parameters = info.getParameters().stream()
+                .map(container::getComponent)
+                .toArray();
 
         constructor.setAccessible(true);
 
@@ -38,6 +34,4 @@ class ComponentFactory {
             throw new ComponentException(message, e);
         }
     }
-
-    private ComponentFactory() {}
 }

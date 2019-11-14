@@ -1,6 +1,7 @@
 package com.github.isaichkindanila.ioc;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,10 +13,14 @@ import java.util.stream.Collectors;
 public class ComponentContainer {
     private final Collection<Wrapper> container;
 
+    private ComponentContainer(Wrapper... wrappers) {
+        container = new ArrayList<>(Arrays.asList(wrappers));
+    }
+
     /**
      * Creates new instance of {@code ComponentContainer}.
      *
-     * @param basePackage top-level common package of all components
+     * @param basePackage    common package of all components
      * @param baseComponents base components required to create other components
      * @return new instance of {@code ComponentContainer}
      * @throws ComponentException if component creation is impossible,
@@ -23,6 +28,24 @@ public class ComponentContainer {
      *                            or some component does not have a public constructor
      */
     public static ComponentContainer newInstance(String basePackage, Object... baseComponents) {
+        var wrappers = Arrays.stream(baseComponents)
+                .map(Wrapper::new)
+                .toArray(Wrapper[]::new);
+
+        return newInstance(basePackage, wrappers);
+    }
+
+    /**
+     * Creates new instance of {@code ComponentContainer}.
+     *
+     * @param basePackage    common package of all components
+     * @param baseComponents base components required to create other components
+     * @return new instance of {@code ComponentContainer}
+     * @throws ComponentException if component creation is impossible,
+     *                            e.g. circular dependencies found
+     *                            or some component does not have a public constructor
+     */
+    public static ComponentContainer newInstance(String basePackage, Wrapper... baseComponents) {
         var instance = new ComponentContainer(baseComponents);
 
         var componentsInfoList = ComponentParser.parseFrom(basePackage);
@@ -31,14 +54,6 @@ public class ComponentContainer {
         sortedInfoList.forEach(instance::addComponent);
 
         return instance;
-    }
-
-    private ComponentContainer(Object... components) {
-        container = new ArrayList<>();
-
-        for (var obj : components) {
-            container.add(new Wrapper(obj));
-        }
     }
 
     private void addComponent(ComponentInfo info) {
@@ -110,7 +125,7 @@ public class ComponentContainer {
      * If several components are found then the one with specified name is chosen.
      *
      * @param clazz component's superclass
-     * @param name component's name
+     * @param name  component's name
      * @return component casted to specified class
      * @throws ComponentException if zero or several components with specified name can be casted to specified class
      */
@@ -133,5 +148,9 @@ public class ComponentContainer {
         }
 
         return result;
+    }
+
+    Object getComponent(Parameter parameter) {
+        return getComponent(parameter.getClazz(), parameter.getName());
     }
 }

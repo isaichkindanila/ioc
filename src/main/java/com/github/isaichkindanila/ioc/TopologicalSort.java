@@ -10,10 +10,6 @@ class TopologicalSort {
     private final List<Node> nodes;
     private final List<ComponentInfo> sorted;
 
-    static List<ComponentInfo> sorted(List<ComponentInfo> componentInfoList) {
-        return new TopologicalSort(componentInfoList).sorted;
-    }
-
     private TopologicalSort(List<ComponentInfo> infoList) {
         // elements are only added to the beginning
         sorted = new LinkedList<>();
@@ -23,6 +19,10 @@ class TopologicalSort {
                 .collect(Collectors.toList());
 
         sort();
+    }
+
+    static List<ComponentInfo> sorted(List<ComponentInfo> componentInfoList) {
+        return new TopologicalSort(componentInfoList).sorted;
     }
 
     private void sort() {

@@ -49,7 +49,7 @@ public class ComponentContainerTest {
 
     @Test
     public void getNamedComponent() {
-        var bean = container.getComponent(ConflictingInterface.class, "1");
+        var bean = container.getComponent(ConflictingInterface.class, "c1");
         Assert.assertEquals(ConflictingComponent1.class, bean.getClass());
     }
 
@@ -58,7 +58,8 @@ public class ComponentContainerTest {
         try {
             container.getComponent(Throwable.class);
             Assert.fail("BeanException expected");
-        } catch (ComponentException ignore) {}
+        } catch (ComponentException ignore) {
+        }
 
         var component = new RuntimeException();
         container = ComponentContainer.newInstance(PACKAGE, "", component);

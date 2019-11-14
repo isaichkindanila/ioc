@@ -1,12 +1,29 @@
 package com.github.isaichkindanila.ioc;
 
 import com.github.isaichkindanila.ioc.annotation.Component;
+import com.github.isaichkindanila.ioc.annotation.Named;
 import io.github.classgraph.ClassGraph;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 class ComponentParser {
+
+    private ComponentParser() {
+    }
+
+    private static Parameter parseParameter(java.lang.reflect.Parameter parameter) {
+        var clazz = parameter.getType();
+        var name = "";
+
+        var annotation = parameter.getAnnotation(Named.class);
+        if (annotation != null) {
+            name = annotation.value();
+        }
+
+        return new Parameter(clazz, name);
+    }
 
     private static ComponentInfo parse(Class clazz) {
         var constructors = clazz.getConstructors();
@@ -17,7 +34,11 @@ class ComponentParser {
             );
         }
 
-        return new ComponentInfo(clazz, constructors[0].getParameterTypes());
+        var parameters = Arrays.stream((constructors[0].getParameters()))
+                .map(ComponentParser::parseParameter)
+                .collect(Collectors.toList());
+
+        return new ComponentInfo(clazz, parameters);
     }
 
     static List<ComponentInfo> parseFrom(String basePackage) {
@@ -34,6 +55,4 @@ class ComponentParser {
                     .collect(Collectors.toList());
         }
     }
-
-    private ComponentParser() {}
 }
