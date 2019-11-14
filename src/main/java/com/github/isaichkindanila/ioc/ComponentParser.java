@@ -1,5 +1,6 @@
 package com.github.isaichkindanila.ioc;
 
+import com.github.isaichkindanila.ioc.annotation.Component;
 import io.github.classgraph.ClassGraph;
 
 import java.util.List;

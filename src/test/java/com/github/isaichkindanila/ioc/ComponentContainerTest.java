@@ -1,6 +1,7 @@
 package com.github.isaichkindanila.ioc;
 
 import com.github.isaichkindanila.ioc.components.ComplexComponent;
+import com.github.isaichkindanila.ioc.components.ConflictingComponent1;
 import com.github.isaichkindanila.ioc.interfaces.ConflictingInterface;
 import com.github.isaichkindanila.ioc.interfaces.GreetingInterface;
 import org.junit.Assert;
@@ -17,7 +18,7 @@ public class ComponentContainerTest {
     }
 
     @Test(expected = ComponentException.class)
-    public void beanNotFound() {
+    public void componentNotFound() {
         container.getComponent(ComponentContainerTest.class);
     }
 
@@ -44,6 +45,12 @@ public class ComponentContainerTest {
     public void getMultipleComponents() {
         var beans = container.getComponents(ConflictingInterface.class);
         Assert.assertEquals(2, beans.size());
+    }
+
+    @Test
+    public void getNamedComponent() {
+        var bean = container.getComponent(ConflictingInterface.class, "1");
+        Assert.assertEquals(ConflictingComponent1.class, bean.getClass());
     }
 
     @Test
