@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  * Class responsible for finding and creating beans.
  */
 @SuppressWarnings("WeakerAccess")
-public class BeanContainer {
+public class ComponentContainer {
     private final Collection<Object> beans;
 
     /**
@@ -20,25 +20,25 @@ public class BeanContainer {
      * (which is automatically created by annotation processor during compilation),
      * as well as beans passed as parameters to this method.
      *
-     * @param beans base beans necessary to create annotated beans
+     * @param components base beans necessary to create annotated beans
      * @return new instance of BeanContainer
-     * @throws BeanException if beans cannot be created for some reason
+     * @throws ComponentException if beans cannot be created for some reason
      */
-    public static BeanContainer newInstance(Object... beans) {
-        var instance = new BeanContainer();
+    public static ComponentContainer newInstance(Object... components) {
+        var instance = new ComponentContainer();
 
-        instance.beans.addAll(Arrays.asList(beans));
+        instance.beans.addAll(Arrays.asList(components));
         instance.init();
 
         return instance;
     }
 
-    private BeanContainer() {
+    private ComponentContainer() {
         beans = new ArrayList<>();
     }
 
-    private void addBean(BeanInfo beanInfo) {
-        beans.add(ClassUtils.createBean(this, beanInfo));
+    private void addComponent(ComponentInfo componentInfo) {
+        beans.add(ClassUtils.createBean(this, componentInfo));
     }
 
     private void init() {
@@ -51,19 +51,19 @@ public class BeanContainer {
         var beanInfoList = BeanParser.parseBeans(input);
         var sortedInfoList = TopologicalSort.sorted(beanInfoList);
 
-        sortedInfoList.forEach(this::addBean);
+        sortedInfoList.forEach(this::addComponent);
     }
 
     /**
      * Finds all beans which can be casted to specified class.
      *
-     * @param beanClass beans' superclass
+     * @param clazz beans' superclass
      * @return list of beans casted to specified class
      */
-    public <T> List<T> getBeans(Class<? extends T> beanClass) {
+    public <T> List<T> getComponents(Class<? extends T> clazz) {
         return beans.stream()
-                .filter(beanClass::isInstance)
-                .map(beanClass::cast)
+                .filter(clazz::isInstance)
+                .map(clazz::cast)
                 .collect(Collectors.toList());
     }
 
@@ -72,13 +72,13 @@ public class BeanContainer {
      * <p>
      * If zero or more than one bean is found, then {@code BeanException} is thrown.
      *
-     * @param beanClass bean's superclass
+     * @param clazz bean's superclass
      * @return bean casted to specified class
-     * @throws BeanException if zero or more than one bean is found
+     * @throws ComponentException if zero or more than one bean is found
      */
     @SuppressWarnings("StringBufferReplaceableByString")
-    public <T> T getBean(Class<? extends T> beanClass) {
-        var candidates = getBeans(beanClass);
+    public <T> T getComponent(Class<? extends T> clazz) {
+        var candidates = getComponents(clazz);
 
         if (candidates.size() == 1) {
             // exactly 1 bean found - everything is OK
@@ -87,7 +87,7 @@ public class BeanContainer {
 
         if (candidates.size() == 0) {
             // no beans found - throw exception
-            throw new BeanException("no beans found for class " + beanClass.getName());
+            throw new ComponentException("no beans found for class " + clazz.getName());
         } else {
             // several beans found - throw exception
             var arrayString = candidates.stream()
@@ -96,12 +96,12 @@ public class BeanContainer {
 
             var builder = new StringBuilder()
                     .append("multiple beans found for class ")
-                    .append(beanClass)
+                    .append(clazz)
                     .append(": [")
                     .append(arrayString)
                     .append(']');
 
-            throw new BeanException(builder.toString());
+            throw new ComponentException(builder.toString());
         }
     }
 }

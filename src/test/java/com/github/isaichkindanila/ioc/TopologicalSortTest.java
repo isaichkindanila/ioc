@@ -7,22 +7,22 @@ import org.junit.Test;
 import java.util.List;
 
 public class TopologicalSortTest {
-    private List<BeanInfo> beanInfoList;
+    private List<ComponentInfo> componentInfoList;
 
     @Before
     public void init() {
-        beanInfoList = List.of(
-                new BeanInfo(String.class, new Class[]{Double.class, Thread.class}),
-                new BeanInfo(Thread.class, new Class[]{}),
-                new BeanInfo(Double.class, new Class[]{Thread.class})
+        componentInfoList = List.of(
+                new ComponentInfo(String.class, new Class[]{Double.class, Thread.class}),
+                new ComponentInfo(Thread.class, new Class[]{}),
+                new ComponentInfo(Double.class, new Class[]{Thread.class})
         );
     }
 
     @Test
     public void testTopologicalSort() {
-        var sorted = TopologicalSort.sorted(beanInfoList)
+        var sorted = TopologicalSort.sorted(componentInfoList)
                 .stream()
-                .map(BeanInfo::getBeanClass)
+                .map(ComponentInfo::getComponentClass)
                 .toArray(Class[]::new);
 
         var expected = new Class[]{Thread.class, Double.class, String.class};

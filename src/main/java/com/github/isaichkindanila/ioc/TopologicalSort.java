@@ -8,13 +8,13 @@ import java.util.stream.Collectors;
 
 class TopologicalSort {
     private final List<Node> nodes;
-    private final List<BeanInfo> sorted;
+    private final List<ComponentInfo> sorted;
 
-    static List<BeanInfo> sorted(List<BeanInfo> beanInfoList) {
-        return new TopologicalSort(beanInfoList).sorted;
+    static List<ComponentInfo> sorted(List<ComponentInfo> componentInfoList) {
+        return new TopologicalSort(componentInfoList).sorted;
     }
 
-    private TopologicalSort(List<BeanInfo> infoList) {
+    private TopologicalSort(List<ComponentInfo> infoList) {
         // elements are only added to the beginning
         sorted = new LinkedList<>();
 
@@ -32,12 +32,12 @@ class TopologicalSort {
 
     @SuppressWarnings("unchecked")
     private void findDependencies(Node node) {
-        for (var argClass : node.beanInfo.getArgClasses()) {
+        for (var argClass : node.componentInfo.getArgClasses()) {
             for (var n : nodes) {
                 // if n's beanClass is subclass of argClass
                 // then n is required to instantiate node
                 // which means node depends on n
-                if (argClass.isAssignableFrom(n.beanInfo.getBeanClass())) {
+                if (argClass.isAssignableFrom(n.componentInfo.getComponentClass())) {
                     n.dependants.add(node);
                 }
             }
@@ -52,7 +52,7 @@ class TopologicalSort {
 
         if (node.mark == Mark.TEMPORARY) {
             // cycle found
-            throw new BeanException("cyclical dependency found");
+            throw new ComponentException("cyclical dependency found");
         }
 
         // set temporary mark to find cycles
@@ -65,7 +65,7 @@ class TopologicalSort {
         node.mark = Mark.PERMANENT;
 
         // add node;s BeanInfo to the beginning of the sorted list
-        sorted.add(0, node.beanInfo);
+        sorted.add(0, node.componentInfo);
     }
 
     private enum Mark {
@@ -73,12 +73,12 @@ class TopologicalSort {
     }
 
     private static class Node {
-        private final BeanInfo beanInfo;
+        private final ComponentInfo componentInfo;
         private final Set<Node> dependants;
         private Mark mark;
 
-        Node(BeanInfo beanInfo) {
-            this.beanInfo = beanInfo;
+        Node(ComponentInfo componentInfo) {
+            this.componentInfo = componentInfo;
             this.dependants = new HashSet<>();
             this.mark = Mark.NONE;
         }

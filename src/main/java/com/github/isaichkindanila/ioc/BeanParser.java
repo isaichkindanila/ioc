@@ -23,21 +23,21 @@ class BeanParser {
         }
     }
 
-    private static BeanInfo jsonToBeanInfo(JSONObject json) {
+    private static ComponentInfo jsonToBeanInfo(JSONObject json) {
         var beanClass = ClassUtils.getClass(json.getString("class"));
         var argClasses = json.getJSONArray("args").toList().stream()
                 .map(String.class::cast)
                 .map(ClassUtils::getClass)
                 .toArray(Class[]::new);
 
-        return new BeanInfo(beanClass, argClasses);
+        return new ComponentInfo(beanClass, argClasses);
     }
 
-    static List<BeanInfo> parseBeans(InputStream in) {
+    static List<ComponentInfo> parseBeans(InputStream in) {
         var jsonString = BeanParser.readAll(in);
         var beanArray = new JSONArray(jsonString);
 
-        var result = new ArrayList<BeanInfo>();
+        var result = new ArrayList<ComponentInfo>();
 
         for (int i = 0; i < beanArray.length(); i++) {
             var beanJson = beanArray.getJSONObject(i);

@@ -1,18 +1,18 @@
-package com.github.isaichkindanila.ioc.beans;
+package com.github.isaichkindanila.ioc.components;
 
-import com.github.isaichkindanila.ioc.annotation.Bean;
+import com.github.isaichkindanila.ioc.annotation.Component;
 import com.github.isaichkindanila.ioc.interfaces.GreetingInterface;
 
-@Bean
-public class GreetingBean implements GreetingInterface {
+@Component
+public class GreetingComponent implements GreetingInterface {
     private final String greeting;
 
-    public GreetingBean() {
+    public GreetingComponent() {
         this("hello");
     }
 
     @SuppressWarnings("WeakerAccess")
-    public GreetingBean(String greeting) {
+    public GreetingComponent(String greeting) {
         this.greeting = greeting;
     }
 

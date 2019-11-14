@@ -7,7 +7,7 @@ class ClassUtils {
     private static final String CREATION_FAILURE = "failed to create bean %s";
 
     private static RuntimeException fatal(String template, String parameter, Throwable cause) {
-        return new BeanException(String.format(template, parameter), cause);
+        return new ComponentException(String.format(template, parameter), cause);
     }
 
     static Class getClass(String className) {
@@ -18,15 +18,15 @@ class ClassUtils {
         }
     }
 
-    private static Object[] getParameters(BeanContainer container, Class[] argClasses) {
+    private static Object[] getParameters(ComponentContainer container, Class[] argClasses) {
         return Arrays.stream(argClasses)
-                .map(container::getBean)
+                .map(container::getComponent)
                 .toArray();
     }
 
     @SuppressWarnings("unchecked")
-    private static Object createBean0(BeanContainer container, BeanInfo info) throws Exception {
-        var beanClass = info.getBeanClass();
+    private static Object createBean0(ComponentContainer container, ComponentInfo info) throws Exception {
+        var beanClass = info.getComponentClass();
         var argClasses = info.getArgClasses();
 
         var constructor = beanClass.getConstructor(argClasses);
@@ -36,11 +36,11 @@ class ClassUtils {
         return constructor.newInstance(parameters);
     }
 
-    static Object createBean(BeanContainer container, BeanInfo info) {
+    static Object createBean(ComponentContainer container, ComponentInfo info) {
         try {
             return createBean0(container, info);
         } catch (Exception e) {
-            throw fatal(CREATION_FAILURE, info.getBeanClass().getName(), e);
+            throw fatal(CREATION_FAILURE, info.getComponentClass().getName(), e);
         }
     }
 

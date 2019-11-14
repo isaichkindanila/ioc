@@ -1,13 +1,13 @@
-package com.github.isaichkindanila.ioc.beans;
+package com.github.isaichkindanila.ioc.components;
 
-import com.github.isaichkindanila.ioc.annotation.Bean;
+import com.github.isaichkindanila.ioc.annotation.Component;
 import com.github.isaichkindanila.ioc.interfaces.GreetingInterface;
 
-@Bean
-public class CompositeBean {
+@Component
+public class ComplexComponent {
     private final GreetingInterface greetingInterface;
 
-    public CompositeBean(GreetingInterface greetingInterface) {
+    public ComplexComponent(GreetingInterface greetingInterface) {
         this.greetingInterface = greetingInterface;
     }
 

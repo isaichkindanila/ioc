@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@SupportedAnnotationTypes("com.github.isaichkindanila.ioc.annotation.Bean")
+@SupportedAnnotationTypes("com.github.isaichkindanila.ioc.annotation.Component")
 public class Processor extends AbstractProcessor {
 
     private final JSONArray beans = new JSONArray();
@@ -112,7 +112,7 @@ public class Processor extends AbstractProcessor {
     }
 
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        var elements = roundEnv.getElementsAnnotatedWith(Bean.class);
+        var elements = roundEnv.getElementsAnnotatedWith(Component.class);
 
         for (var element : elements) {
             try {

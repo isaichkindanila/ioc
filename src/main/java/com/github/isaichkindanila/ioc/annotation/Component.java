@@ -17,5 +17,5 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.CONSTRUCTOR, ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
-public @interface Bean {
+public @interface Component {
 }

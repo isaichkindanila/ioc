@@ -1,0 +1,60 @@
+package com.github.isaichkindanila.ioc;
+
+import com.github.isaichkindanila.ioc.components.ComplexComponent;
+import com.github.isaichkindanila.ioc.interfaces.ConflictingInterface;
+import com.github.isaichkindanila.ioc.interfaces.GreetingInterface;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+public class ComponentContainerTest {
+    private ComponentContainer container;
+
+    @Before
+    public void init() {
+        container = ComponentContainer.newInstance();
+    }
+
+    @Test(expected = ComponentException.class)
+    public void beanNotFound() {
+        container.getComponent(ComponentContainerTest.class);
+    }
+
+    @Test(expected = ComponentException.class)
+    public void multipleComponentsFound() {
+        container.getComponent(ConflictingInterface.class);
+    }
+
+    @Test
+    public void getSimpleComponent() {
+        var bean = container.getComponent(GreetingInterface.class);
+        Assert.assertEquals("hello", bean.getGreeting());
+    }
+
+    @Test
+    public void getComplexComponent() {
+        var bean = container.getComponent(ComplexComponent.class);
+        var greeting = bean.getPersonalizedGreeting("test");
+
+        Assert.assertEquals("hello, test", greeting);
+    }
+
+    @Test
+    public void getMultipleComponents() {
+        var beans = container.getComponents(ConflictingInterface.class);
+        Assert.assertEquals(2, beans.size());
+    }
+
+    @Test
+    public void addComponent() {
+        try {
+            container.getComponent(Throwable.class);
+            Assert.fail("BeanException expected");
+        } catch (ComponentException ignore) {}
+
+        var bean = new RuntimeException();
+        container = ComponentContainer.newInstance(bean);
+
+        Assert.assertSame(bean, container.getComponent(Throwable.class));
+    }
+}
