@@ -8,7 +8,7 @@ class ComponentFactory {
     }
 
     @SuppressWarnings("unchecked")
-    private static Wrapper createComponent0(ComponentContainer container, ComponentInfo info) throws Exception {
+    private static ComponentWrapper createComponent0(ComponentContainer container, ComponentInfo info) throws Exception {
         var componentClass = info.getComponentClass();
 
         var constructor = componentClass.getConstructor(info.getArgClasses());
@@ -21,10 +21,10 @@ class ComponentFactory {
         var component = constructor.newInstance(parameters);
         var annotation = (Component) componentClass.getAnnotation(Component.class);
 
-        return new Wrapper(component, annotation.name());
+        return new ComponentWrapper(component, annotation.name());
     }
 
-    static Wrapper createComponent(ComponentContainer container, ComponentInfo info) {
+    static ComponentWrapper createComponent(ComponentContainer container, ComponentInfo info) {
         try {
             return createComponent0(container, info);
         } catch (Exception e) {

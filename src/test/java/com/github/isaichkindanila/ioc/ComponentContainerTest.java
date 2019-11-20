@@ -29,35 +29,35 @@ public class ComponentContainerTest {
 
     @Test
     public void getSimpleComponent() {
-        var bean = container.getComponent(GreetingInterface.class);
-        Assert.assertEquals("hello", bean.getGreeting());
+        var component = container.getComponent(GreetingInterface.class);
+        Assert.assertEquals("hello", component.getGreeting());
     }
 
     @Test
     public void getComplexComponent() {
-        var bean = container.getComponent(ComplexComponent.class);
-        var greeting = bean.getPersonalizedGreeting("test");
+        var component = container.getComponent(ComplexComponent.class);
+        var greeting = component.getPersonalizedGreeting("test");
 
         Assert.assertEquals("hello, test", greeting);
     }
 
     @Test
     public void getMultipleComponents() {
-        var beans = container.getComponents(ConflictingInterface.class);
-        Assert.assertEquals(2, beans.size());
+        var components = container.getComponents(ConflictingInterface.class);
+        Assert.assertEquals(2, components.size());
     }
 
     @Test
     public void getNamedComponent() {
-        var bean = container.getComponent(ConflictingInterface.class, "c1");
-        Assert.assertEquals(ConflictingComponent1.class, bean.getClass());
+        var component = container.getComponent(ConflictingInterface.class, "c1");
+        Assert.assertEquals(ConflictingComponent1.class, component.getClass());
     }
 
     @Test
     public void addComponent() {
         try {
             container.getComponent(Throwable.class);
-            Assert.fail("BeanException expected");
+            Assert.fail("ComponentException expected");
         } catch (ComponentException ignore) {
         }
 

@@ -1,16 +1,16 @@
 package com.github.isaichkindanila.ioc;
 
 @SuppressWarnings("WeakerAccess")
-public class Wrapper {
+public class ComponentWrapper {
     private final Object component;
     private final String name;
 
-    public Wrapper(Object component, String name) {
+    public ComponentWrapper(Object component, String name) {
         this.component = component;
         this.name = name;
     }
 
-    public Wrapper(Object component) {
+    public ComponentWrapper(Object component) {
         this(component, "");
     }
 

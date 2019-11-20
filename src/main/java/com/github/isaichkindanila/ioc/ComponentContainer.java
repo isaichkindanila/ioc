@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings("WeakerAccess")
 public class ComponentContainer {
-    private final Collection<Wrapper> container;
+    private final Collection<ComponentWrapper> container;
 
-    private ComponentContainer(Wrapper... wrappers) {
+    private ComponentContainer(ComponentWrapper... wrappers) {
         container = new ArrayList<>(Arrays.asList(wrappers));
     }
 
@@ -29,8 +29,8 @@ public class ComponentContainer {
      */
     public static ComponentContainer newInstance(String basePackage, Object... baseComponents) {
         var wrappers = Arrays.stream(baseComponents)
-                .map(Wrapper::new)
-                .toArray(Wrapper[]::new);
+                .map(ComponentWrapper::new)
+                .toArray(ComponentWrapper[]::new);
 
         return newInstance(basePackage, wrappers);
     }
@@ -45,7 +45,7 @@ public class ComponentContainer {
      *                            e.g. circular dependencies found
      *                            or some component does not have a public constructor
      */
-    public static ComponentContainer newInstance(String basePackage, Wrapper... baseComponents) {
+    public static ComponentContainer newInstance(String basePackage, ComponentWrapper... baseComponents) {
         var instance = new ComponentContainer(baseComponents);
 
         var componentsInfoList = ComponentParser.parseFrom(basePackage);
@@ -68,7 +68,7 @@ public class ComponentContainer {
      */
     public <T> List<T> getComponents(Class<? extends T> clazz) {
         return container.stream()
-                .map(Wrapper::getComponent)
+                .map(ComponentWrapper::getComponent)
                 .filter(clazz::isInstance)
                 .map(clazz::cast)
                 .collect(Collectors.toList());
@@ -87,7 +87,7 @@ public class ComponentContainer {
 
     @SuppressWarnings("StringBufferReplaceableByString")
     private <T> T getComponent(Class<? extends T> clazz,
-                               List<Wrapper> candidates,
+                               List<ComponentWrapper> candidates,
                                String definition,
                                boolean fatal) {
         if (candidates.size() == 0) {
