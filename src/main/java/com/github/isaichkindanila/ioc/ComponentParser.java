@@ -15,14 +15,13 @@ class ComponentParser {
 
     private static Parameter parseParameter(java.lang.reflect.Parameter parameter) {
         var clazz = parameter.getType();
-        var name = "";
-
         var annotation = parameter.getAnnotation(Named.class);
-        if (annotation != null) {
-            name = annotation.value();
-        }
 
-        return new Parameter(clazz, name);
+        if (annotation != null) {
+            return new Parameter(clazz, annotation.value());
+        } else {
+            return new Parameter(clazz, null);
+        }
     }
 
     private static ComponentInfo parse(Class clazz) {
