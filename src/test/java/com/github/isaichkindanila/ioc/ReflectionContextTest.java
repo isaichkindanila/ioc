@@ -8,34 +8,34 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ComponentContainerTest {
+public class ReflectionContextTest {
     private static final String PACKAGE = "com.github.isaichkindanila.ioc.components";
-    private ComponentContainer container;
+    private Context context;
 
     @Before
     public void init() {
-        container = ComponentContainer.newInstance(PACKAGE, "hello");
+        context = ReflectionContext.newInstance(PACKAGE, "hello");
     }
 
     @Test(expected = ComponentException.class)
     public void componentNotFound() {
-        container.getComponent(ComponentContainerTest.class);
+        context.getComponent(ReflectionContextTest.class);
     }
 
     @Test(expected = ComponentException.class)
     public void multipleComponentsFound() {
-        container.getComponent(ConflictingInterface.class);
+        context.getComponent(ConflictingInterface.class);
     }
 
     @Test
     public void getSimpleComponent() {
-        var component = container.getComponent(GreetingInterface.class);
+        var component = context.getComponent(GreetingInterface.class);
         Assert.assertEquals("hello", component.getGreeting());
     }
 
     @Test
     public void getComplexComponent() {
-        var component = container.getComponent(ComplexComponent.class);
+        var component = context.getComponent(ComplexComponent.class);
         var greeting = component.getPersonalizedGreeting("test");
 
         Assert.assertEquals("hello, test", greeting);
@@ -43,27 +43,26 @@ public class ComponentContainerTest {
 
     @Test
     public void getMultipleComponents() {
-        var components = container.getComponents(ConflictingInterface.class);
+        var components = context.getComponents(ConflictingInterface.class);
         Assert.assertEquals(2, components.size());
     }
 
     @Test
     public void getNamedComponent() {
-        var component = container.getComponent(ConflictingInterface.class, "c1");
+        var component = context.getComponent(ConflictingInterface.class, "c1");
         Assert.assertEquals(ConflictingComponent1.class, component.getClass());
     }
 
     @Test
     public void addComponent() {
         try {
-            container.getComponent(Throwable.class);
+            context.getComponent(Throwable.class);
             Assert.fail("ComponentException expected");
-        } catch (ComponentException ignore) {
-        }
+        } catch (ComponentException ignore) {}
 
         var component = new RuntimeException();
-        container = ComponentContainer.newInstance(PACKAGE, "", component);
+        context = ReflectionContext.newInstance(PACKAGE, "", component);
 
-        Assert.assertSame(component, container.getComponent(Throwable.class));
+        Assert.assertSame(component, context.getComponent(Throwable.class));
     }
 }

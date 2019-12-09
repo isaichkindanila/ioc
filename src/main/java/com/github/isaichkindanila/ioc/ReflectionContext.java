@@ -7,18 +7,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Class responsible for finding and creating components.
+ * Manages components marked with {@link com.github.isaichkindanila.ioc.annotation.Component}.
  */
 @SuppressWarnings("WeakerAccess")
-public class ComponentContainer {
+public class ReflectionContext implements Context {
     private final Collection<ComponentWrapper> container;
 
-    private ComponentContainer(ComponentWrapper... wrappers) {
+    private ReflectionContext(ComponentWrapper... wrappers) {
         container = new ArrayList<>(Arrays.asList(wrappers));
     }
 
     /**
-     * Creates new instance of {@code ComponentContainer}.
+     * Creates new instance of {@code ReflectionContext}.
      *
      * @param basePackage    common package of all components
      * @param baseComponents base components required to create other components
@@ -27,7 +27,7 @@ public class ComponentContainer {
      *                            e.g. circular dependencies found
      *                            or some component does not have a public constructor
      */
-    public static ComponentContainer newInstance(String basePackage, Object... baseComponents) {
+    public static ReflectionContext newInstance(String basePackage, Object... baseComponents) {
         var wrappers = Arrays.stream(baseComponents)
                 .map(ComponentWrapper::new)
                 .toArray(ComponentWrapper[]::new);
@@ -36,7 +36,7 @@ public class ComponentContainer {
     }
 
     /**
-     * Creates new instance of {@code ComponentContainer}.
+     * Creates new instance of {@code ReflectionContext}.
      *
      * @param basePackage    common package of all components
      * @param baseComponents base components required to create other components
@@ -45,8 +45,8 @@ public class ComponentContainer {
      *                            e.g. circular dependencies found
      *                            or some component does not have a public constructor
      */
-    public static ComponentContainer newInstance(String basePackage, ComponentWrapper... baseComponents) {
-        var instance = new ComponentContainer(baseComponents);
+    public static ReflectionContext newInstance(String basePackage, ComponentWrapper... baseComponents) {
+        var instance = new ReflectionContext(baseComponents);
 
         var componentsInfoList = ComponentParser.parseFrom(basePackage);
         var sortedInfoList = TopologicalSort.sorted(componentsInfoList);
@@ -61,10 +61,7 @@ public class ComponentContainer {
     }
 
     /**
-     * Finds all components which can be casted to specified class.
-     *
-     * @param clazz components' superclass
-     * @return {@code List} of components casted to specified class
+     * {@inheritDoc}
      */
     public <T> List<T> getComponents(Class<? extends T> clazz) {
         return container.stream()
@@ -72,17 +69,6 @@ public class ComponentContainer {
                 .filter(clazz::isInstance)
                 .map(clazz::cast)
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Finds a component which can be casted to specified class.
-     *
-     * @param clazz component's superclass
-     * @return component casted to specified class
-     * @throws ComponentException if zero or several components can be casted to specified class
-     */
-    public <T> T getComponent(Class<? extends T> clazz) {
-        return getComponent(clazz, null);
     }
 
     @SuppressWarnings("StringBufferReplaceableByString")
@@ -121,13 +107,7 @@ public class ComponentContainer {
     }
 
     /**
-     * Finds a component which can be casted to specified class.
-     * If several components are found then the one with specified name is chosen.
-     *
-     * @param clazz component's superclass
-     * @param name  component's name
-     * @return component casted to specified class
-     * @throws ComponentException if zero or several components with specified name can be casted to specified class
+     * {@inheritDoc}
      */
     public <T> T getComponent(Class<? extends T> clazz, String name) {
         var candidates = container.stream()
